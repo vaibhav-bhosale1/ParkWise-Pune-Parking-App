@@ -20,7 +20,6 @@ def train_and_predict():
         raise Exception("MONGO_URI environment variable not set!")
 
     client = pymongo.MongoClient(MONGO_URI)
-    # --- CHANGE: Updated database name to match your setup ---
     db = client.ParkWiseDB
 
     print("Successfully connected to MongoDB.")
@@ -43,11 +42,11 @@ def train_and_predict():
 
         # 4. FEATURE ENGINEERING: Convert raw reports into a trainable format
         df = pd.DataFrame(reports)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
         df.set_index('timestamp', inplace=True)
 
-        # Aggregate reports into hourly blocks
-        hourly_counts = df['reportType'].resample('H').value_counts().unstack(fill_value=0)
+        # --- CHANGE: Updated to the most modern pandas syntax for this operation ---
+        hourly_counts = df.groupby(pd.Grouper(freq='h'))['reportType'].value_counts().unstack(fill_value=0)
         
         # Ensure all possible columns exist
         for col in ['parked', 'left', 'full']:
@@ -55,14 +54,13 @@ def train_and_predict():
                 hourly_counts[col] = 0
 
         # Calculate the availability score
-        # Availability = (Spots Freed) / (Spots Taken + Reports of Fullness + 1 for smoothing)
         hourly_counts['availabilityScore'] = (
             hourly_counts['left'] / (hourly_counts['parked'] + hourly_counts['full'] + 1)
-        ).clip(0, 1) # Ensure score is between 0 and 1
+        ).clip(0, 1)
 
         # Create time-based features for the model
         hourly_counts['hour_of_day'] = hourly_counts.index.hour
-        hourly_counts['day_of_week'] = hourly_counts.index.dayofweek # Monday=0, Sunday=6
+        hourly_counts['day_of_week'] = hourly_counts.index.dayofweek
 
         # Prepare training data
         X = hourly_counts[['hour_of_day', 'day_of_week']]
@@ -76,16 +74,13 @@ def train_and_predict():
 
         # 6. GENERATE PREDICTIONS
         print("Generating predictions for the next 24 hours...")
-        # Note: The model is trained on hourly data, so predictions for each 15-min interval within the same hour will be identical.
         future_timestamps = pd.to_datetime([datetime.now() + timedelta(minutes=15 * i) for i in range(96)])
         future_df = pd.DataFrame(index=future_timestamps)
         future_df['hour_of_day'] = future_df.index.hour
         future_df['day_of_week'] = future_df.index.dayofweek
         
-        # Predict availability for the future timestamps
         future_predictions = model.predict(future_df[['hour_of_day', 'day_of_week']])
 
-        # Format predictions for MongoDB
         predictions_payload = [
             {"timestamp": ts.to_pydatetime(), "availabilityScore": float(score)}
             for ts, score in zip(future_timestamps, future_predictions)
