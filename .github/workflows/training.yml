@@ -1,0 +1,35 @@
+# .github/workflows/training.yml
+
+name: Nightly Model Training
+
+on:
+  # Allows you to run this workflow manually from the Actions tab on GitHub
+  workflow_dispatch:
+
+  # Runs on a schedule (every day at 00:00 UTC)
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  train-and-save-predictions:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+          
+      - name: Run the training script
+        env:
+          
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: python scripts/train_model.py
