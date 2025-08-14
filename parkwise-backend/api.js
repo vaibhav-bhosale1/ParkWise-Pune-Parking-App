@@ -4,12 +4,18 @@ import express from 'express';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
 import { ParkingZone, UserReport } from './Model/models.js';
+import cors from 'cors'; 
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file for local development
 dotenv.config();
 
 const app = express();
+
+// It will add the 
+
+app.use(cors());
+
 // Use the standard express.json() middleware. This will work correctly in Render's environment.
 app.use(express.json());
 

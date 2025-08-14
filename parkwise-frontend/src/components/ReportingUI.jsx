@@ -30,6 +30,17 @@ const ReportingUI = () => {
     }
   };
 
+   const buttonStyle = {
+    padding: '10px 20px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    color: '#333', // Dark text color for readability
+    backgroundColor: '#fff', // Explicit white background
+    border: '1px solid #ccc', // A light border to define the button shape
+    borderRadius: '5px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)' // A subtle shadow for depth
+  };
+
   return (
     <div style={{
         position: 'absolute',
@@ -43,9 +54,9 @@ const ReportingUI = () => {
         padding: '10px',
         borderRadius: '8px',
       }}>
-      <button onClick={() => handleReport('parked')} style={{padding: '10px 20px', fontSize: '16px', cursor: 'pointer'}}>I Just Parked</button>
-      <button onClick={() => handleReport('left')} style={{padding: '10px 20px', fontSize: '16px', cursor: 'pointer'}}>I Just Left</button>
-      <button onClick={() => handleReport('full')} style={{padding: '10px 20px', fontSize: '16px', cursor: 'pointer'}}>Area is Full</button>
+      <button onClick={() => handleReport('parked')} style={buttonStyle}>I Just Parked</button>
+      <button onClick={() => handleReport('left')} style={buttonStyle}>I Just Left</button>
+      <button onClick={() => handleReport('full')} style={buttonStyle}>Area is Full</button>
     </div>
   );
 };
