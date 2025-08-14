@@ -1,0 +1,10 @@
+
+{
+  "name": "ParkWise",
+  "short_name": "ParkWise",
+  "description": "AI-Powered Parking Assistant for Pune",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000"
+}
