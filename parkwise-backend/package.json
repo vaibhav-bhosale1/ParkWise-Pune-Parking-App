@@ -2,23 +2,22 @@
   "name": "parkwise-backend",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
+
   "scripts": {
+    "start":"nodemon api.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "ioredis": "^5.7.0",
     "mongoose": "^8.17.1",
-    "serverless": "^3.40.0",
+    "nodemon": "^3.1.10",
     "serverless-http": "^3.2.0"
-  },
-  "devDependencies": {
-    "serverless-dotenv-plugin": "^6.0.0",
-    "serverless-offline": "^14.4.0"
   }
 }
