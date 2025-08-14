@@ -1,37 +1,43 @@
 // src/app/page.js
+'use client' // This makes the component a Client Component
 
 import ReportingUI from '@/components/ReportingUI';
-import MapLoader from '@/components/MapLoader'; // Import the new client component
+import MapLoader from '@/components/MapLoader';
+import { useState, useEffect } from 'react';
+import TimeSlider from "@/components/TimeSlider"; // Import the TimeSlider component
 
-async function getZones() {
-  // In production, this will be your deployed API URL.
-  // For local development, it's the serverless-offline URL.
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-  
-  try {
-    const res = await fetch(`${apiUrl}/zones`, { cache: 'no-store' }); // Fetch fresh data every time
-    if (!res.ok) {
-      throw new Error('Failed to fetch zones');
-    }
-    return res.json();
-  } catch (error) {
-    console.error("API Error:", error);
-    return []; // Return an empty array on error so the app doesn't crash
-  }
-}
+export default function Home() {
+  const [zones, setZones] = useState([]);
+  // This state will now be controlled by the TimeSlider
+  const [selectedTime, setSelectedTime] = useState(new Date());
 
-export default async function Home() {
-  const zones = await getZones();
+  useEffect(() => {
+    // This function fetches zone data on the client-side
+    const getZones = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      try {
+        const res = await fetch(`${apiUrl}/zones`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch zones');
+        const data = await res.json();
+        setZones(data);
+      } catch (error) {
+        console.error("API Error:", error);
+        setZones([]); // Set to empty on error
+      }
+    };
 
-  return (
-    <main style={{ height: '100vh', width: '100vw' }}>
-      {/* The map logic is now handled by the MapLoader client component, 
-        which safely performs the dynamic import with ssr: false.
-      */}
-      <MapLoader zones={zones} />
-      
-      {/* The ReportingUI component already contains the buttons. */}
-      <ReportingUI />
-    </main>
-  );
+    getZones();
+  }, []); // The empty dependency array means this runs once when the component mounts.
+
+  return (
+    <main style={{ height: '100vh', width: '100vw' }}>
+      {/* The TimeSlider component is now added to the UI */}
+      <TimeSlider selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
+      
+      {/* The MapLoader now receives the selectedTime state, so the map updates when the slider moves */}
+      <MapLoader zones={zones} selectedTime={selectedTime} />
+      
+      <ReportingUI />
+    </main>
+  );
 }
