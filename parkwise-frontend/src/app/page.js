@@ -6,12 +6,14 @@ import MapLoader from '@/components/MapLoader';
 import { useState, useEffect } from 'react';
 import TimeSlider from "@/components/TimeSlider";
 import Pusher from 'pusher-js';
+import ViewToggle from '@/components/ViewToggle';
 
 export default function Home() {
   const [zones, setZones] = useState([]);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [userPosition, setUserPosition] = useState(null);
   const [liveZoneData, setLiveZoneData] = useState({});
+   const [viewMode, setViewMode] = useState('live');
 
   useEffect(() => {
     const getZones = async () => {
@@ -60,14 +62,21 @@ export default function Home() {
     };
   }, []);
 
-  return (
+   return (
     <main style={{ height: '100vh', width: '100vw' }}>
-      <TimeSlider selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
+      <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+      
+      {/* --- CHANGE: Conditionally render the TimeSlider --- */}
+      {viewMode === 'forecast' && (
+        <TimeSlider selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
+      )}
+
       <MapLoader 
         zones={zones} 
         selectedTime={selectedTime} 
         userPosition={userPosition} 
         liveZoneData={liveZoneData} 
+        viewMode={viewMode} // Pass the viewMode to the map
       />
       <ReportingUI 
         zones={zones} 
