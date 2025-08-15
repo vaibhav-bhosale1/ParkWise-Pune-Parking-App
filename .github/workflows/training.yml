@@ -6,9 +6,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab on GitHub
   workflow_dispatch:
 
-  # Runs on a schedule (every day at 00:00 UTC)
+  # Runs on a schedule (every day at 22:00 UTC, which is 3:30 AM IST)
   schedule:
-  - cron: '*/1 * * * *'
+    - cron: '0 22 * * *'
 
 jobs:
   train-and-save-predictions:
@@ -21,15 +21,25 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
+          # Assuming your requirements.txt is in the root of the 'scripts' directory
           pip install -r scripts/requirements.txt
           
       - name: Run the training script
         env:
-          
+          # This secret must be configured in your GitHub repository settings
+          # Go to Settings > Secrets and variables > Actions > New repository secret
           MONGO_URI: ${{ secrets.MONGO_URI }}
         run: python scripts/train_model.py
