@@ -1,9 +1,9 @@
 // src/components/MapComponent.jsx
 'use client';
-import { useState, useEffect } from 'react'; 
 import { MapContainer, TileLayer, Polygon, Popup, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { useEffect, useState } from 'react'; // Make sure useState is imported
 
 // --- Helper Functions (unchanged) ---
 const getColorByAvailability = (score) => {
@@ -32,44 +32,24 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
-// --- Component to handle user location with improved error handling ---
-function LocationMarker() {
-  const [position, setPosition] = useState(null);
-  const map = useMap(); // Get the map instance
+// --- UPDATED COMPONENT to prevent re-render crashes ---
+function RecenterAutomatically({position}){
+    const map = useMap();
+    // This state tracks if we have already centered the map.
+    const [hasCentered, setHasCentered] = useState(false);
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        const newPosition = [latitude, longitude];
-        setPosition(newPosition);
-        map.flyTo(newPosition, 15); 
-      },
-      // --- UPDATED: More detailed error callback ---
-      (error) => {
-        console.error(`Geolocation Error (Code ${error.code}): ${error.message}`);
-        // This provides more specific feedback in the console.
-        if (error.code === 1) {
-          console.log("Reason: User denied the request for Geolocation.");
-        } else if (error.code === 2) {
-          console.log("Reason: Location information is unavailable (e.g., no GPS signal).");
-        } else if (error.code === 3) {
-          console.log("Reason: The request to get user location timed out.");
+    useEffect(() => {
+        // Only fly to the position if we have a position AND we haven't centered yet.
+        if (position && !hasCentered) {
+            map.flyTo(position, 15);
+            setHasCentered(true); // Mark that we've centered the map.
         }
-      },
-      { enableHighAccuracy: true }
-    );
-  }, [map]);
+    }, [position, hasCentered, map]);
 
-  return position === null ? null : (
-    <Marker position={position}>
-      <Popup>You are here</Popup>
-    </Marker>
-  );
+    return null; // This component does not render anything.
 }
 
-
-const MapComponent = ({ zones, selectedTime }) => {
+const MapComponent = ({ zones, selectedTime ,userPosition }) => {
   const initialPosition = [18.5204, 73.8567]; // Pune
 
   return (
@@ -78,8 +58,14 @@ const MapComponent = ({ zones, selectedTime }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      
-      <LocationMarker />
+      
+      <RecenterAutomatically position={userPosition} />
+
+      {userPosition && (
+        <Marker position={userPosition}>
+          <Popup>You are here</Popup>
+        </Marker>
+      )}
 
       {zones.map((zone) => {
         const prediction = getPredictionForTime(zone.predictions, selectedTime);

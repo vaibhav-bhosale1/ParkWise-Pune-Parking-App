@@ -4,40 +4,66 @@
 import ReportingUI from '@/components/ReportingUI';
 import MapLoader from '@/components/MapLoader';
 import { useState, useEffect } from 'react';
-import TimeSlider from "@/components/TimeSlider"; // Import the TimeSlider component
+import TimeSlider from "@/components/TimeSlider";
 
 export default function Home() {
-  const [zones, setZones] = useState([]);
-  // This state will now be controlled by the TimeSlider
-  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [zones, setZones] = useState([]);
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [userPosition, setUserPosition] = useState(null);
 
-  useEffect(() => {
-    // This function fetches zone data on the client-side
-    const getZones = async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      try {
-        const res = await fetch(`${apiUrl}/zones`, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Failed to fetch zones');
-        const data = await res.json();
-        setZones(data);
-      } catch (error) {
-        console.error("API Error:", error);
-        setZones([]); // Set to empty on error
+  useEffect(() => {
+    const getZones = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      try {
+        const res = await fetch(`${apiUrl}/zones`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch zones');
+        const data = await res.json();
+        setZones(data);
+      } catch (error) {
+        console.error("API Error:", error);
+        setZones([]);
+      }
+    };
+    getZones();
+  }, []);
+
+  // --- CHANGE: Use watchPosition for continuous, more accurate updates ---
+  useEffect(() => {
+    // Check if geolocation is available in the browser
+    if (!navigator.geolocation) {
+      console.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    // Start watching the user's position
+    const watcherId = navigator.geolocation.watchPosition(
+      (position) => {
+        console.log("New position received:", position.coords);
+        const { latitude, longitude } = position.coords;
+        setUserPosition([latitude, longitude]);
+      },
+      (error) => {
+        console.error(`Geolocation Error (Code ${error.code}): ${error.message}`);
+      },
+      {
+        enableHighAccuracy: true, // Request the most accurate location possible
+        timeout: 10000,           // Wait 10 seconds before timing out
+        maximumAge: 0             // Don't use a cached position
       }
+    );
+
+    // --- Cleanup function ---
+    // This is crucial to stop watching when the component is unmounted.
+    return () => {
+      navigator.geolocation.clearWatch(watcherId);
     };
+  }, []); // The empty dependency array ensures this runs only once on mount.
 
-    getZones();
-  }, []); // The empty dependency array means this runs once when the component mounts.
-
-  return (
-    <main style={{ height: '100vh', width: '100vw' }}>
-      {/* The TimeSlider component is now added to the UI */}
-      <TimeSlider selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
-      
-      {/* The MapLoader now receives the selectedTime state, so the map updates when the slider moves */}
-      <MapLoader zones={zones} selectedTime={selectedTime} />
-      
-      <ReportingUI />
-    </main>
-  );
+  return (
+    <main style={{ height: '100vh', width: '100vw' }}>
+      <TimeSlider selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
+      <MapLoader zones={zones} selectedTime={selectedTime} userPosition={userPosition} />
+      <ReportingUI zones={zones} userPosition={userPosition} />
+    </main>
+  );
 }
