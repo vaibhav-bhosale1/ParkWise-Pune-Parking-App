@@ -25,6 +25,8 @@ const parkingZoneSchema = new mongoose.Schema({
     }
   },
   estimatedCapacity: Number,
+  capacity: { type: Number, required: true, default: 20 }, // Added
+  currentOccupancy: { type: Number, required: true, default: 0 }, // Added
   peakHours: [String],
   predictions: Array,
   lastUpdated: Date

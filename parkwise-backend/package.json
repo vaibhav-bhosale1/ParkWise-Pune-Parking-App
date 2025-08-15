@@ -18,6 +18,7 @@
     "ioredis": "^5.7.0",
     "mongoose": "^8.17.1",
     "nodemon": "^3.1.10",
+    "pusher": "^5.2.0",
     "serverless-http": "^3.2.0"
   }
 }
