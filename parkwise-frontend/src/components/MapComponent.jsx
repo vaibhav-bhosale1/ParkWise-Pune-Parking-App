@@ -69,23 +69,24 @@ const MapComponent = ({ zones, selectedTime ,userPosition, liveZoneData, viewMod
       )}
 
       {zones.map((zone) => {
-        const liveData = liveZoneData[zone.zoneId];
         let color, popupText;
 
-        if (viewMode === 'live' && liveData && liveData.hasOwnProperty('currentOccupancy')) {
-          // Live View
-          color = getLiveColor(liveData.currentOccupancy, liveData.capacity);
-          const available = liveData.capacity - liveData.currentOccupancy;
-          popupText = `Live Status: ${available} / ${liveData.capacity} spots available`;
-        } else {
-          // Forecast View
+        // --- CORRECTED LOGIC ---
+        if (viewMode === 'forecast') {
+          // FORECAST VIEW: Always use prediction data
           const prediction = getPredictionForTime(zone.predictions, selectedTime);
-          // --- ADDED: Diagnostic log ---
-          if (zone.zoneId === 'zone_magarpatta_01') {
-            console.log(`Forecast for ${zone.zoneName}: availabilityScore is ${prediction.availabilityScore}`);
-          }
           color = getColorByAvailability(prediction.availabilityScore);
           popupText = `Predicted Availability: ${Math.round(prediction.availabilityScore * 100)}%`;
+        } else {
+          // LIVE VIEW: Prioritize Pusher data, but fall back to initial DB data
+          const liveUpdate = liveZoneData[zone.zoneId];
+          
+          const occupancy = liveUpdate ? liveUpdate.currentOccupancy : zone.currentOccupancy;
+          const capacity = liveUpdate ? liveUpdate.capacity : zone.capacity;
+          
+          color = getLiveColor(occupancy, capacity);
+          const available = capacity - occupancy;
+          popupText = `Live Status: ${available} / ${capacity} spots available`;
         }
 
         return (
