@@ -1,6 +1,9 @@
 // src/components/ReportingUI.jsx
 'use client';
 import React, { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from './ui/button';
+import { toast } from "sonner"
 
 // --- Helper Functions ---
 const haversineDistance = (p1, p2) => {
@@ -50,7 +53,7 @@ const ReportingUI = ({ userPosition, zones, liveZoneData }) => {
   const handleReport = async (reportType) => {
     const proximityThresholdInMeters = 250;
     if (!zone || distance > proximityThresholdInMeters) {
-      alert(`You are not close enough to a parking zone. The nearest is ${Math.round(distance)}m away.`);
+      toast.warning(`You are not close enough to a parking zone. The nearest is ${Math.round(distance)}m away.`);
       return;
     }
     
@@ -64,55 +67,43 @@ const ReportingUI = ({ userPosition, zones, liveZoneData }) => {
       });
       const result = await response.json();
       if (!response.ok) {
-        alert(`Error: ${result.error}`);
+        toast.error(`Error: ${result.error}`);
+      }else{
+        toast.success('Reported !!')
       }
     } catch (error) {
-      console.error('Failed to submit report:', error);
-      alert('Failed to submit report.');
+      toast.error('Failed to submit report:');
     }
   };
 
-  const buttonStyle = {
-    padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    color: '#333',
-    backgroundColor: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: '5px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  };
-  const disabledButtonStyle = { ...buttonStyle, cursor: 'not-allowed', backgroundColor: '#e0e0e0' };
+ 
+  
 
-  return (
-    <div style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '10px',
-        background: 'rgba(255, 255, 255, 0.8)',
-        padding: '10px',
-        borderRadius: '8px',
-      }}>
-      <div style={{ fontWeight: 'bold' }}>
-        {zone ? `Nearest: ${zone.zoneName} (${Math.round(distance)}m away)` : "Finding nearest parking zone..."}
-      </div>
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button 
-          onClick={() => handleReport('parked')} 
-          style={isFull ? disabledButtonStyle : buttonStyle} 
-          disabled={isFull}
-        >
-          I Just Parked
-        </button>
-        <button onClick={() => handleReport('left')} style={buttonStyle}>I Just Left</button>
-        <button onClick={() => handleReport('full')} style={buttonStyle}>Area is Full</button>
-      </div>
+return (
+    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
+      <Card>
+        <CardHeader className="p-3">
+          <CardTitle className="text-center text-sm font-medium text-gray-700">
+            {zone 
+              ? `Nearest: ${zone.zoneName} (${Math.round(distance)}m away)` 
+              : "Finding nearest parking zone..."}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 pt-0 flex justify-center gap-2">
+          <Button 
+            onClick={() => handleReport('parked')} 
+            disabled={isFull}
+          >
+            I Just Parked
+          </Button>
+          <Button onClick={() => handleReport('left')} variant="outline">
+            I Just Left
+          </Button>
+          <Button onClick={() => handleReport('full')} variant="destructive">
+            Area is Full
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };

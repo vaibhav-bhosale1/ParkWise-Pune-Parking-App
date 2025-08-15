@@ -4,7 +4,7 @@
 import ReportingUI from '@/components/ReportingUI';
 import MapLoader from '@/components/MapLoader';
 import { useState, useEffect } from 'react';
-import TimeSlider from "@/components/TimeSlider";
+import ForecastControl from "@/components/ForecastControl";
 import Pusher from 'pusher-js';
 import ViewToggle from '@/components/ViewToggle';
 
@@ -13,7 +13,7 @@ export default function Home() {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [userPosition, setUserPosition] = useState(null);
   const [liveZoneData, setLiveZoneData] = useState({});
-   const [viewMode, setViewMode] = useState('live');
+  const [viewMode, setViewMode] = useState('live');
 
   useEffect(() => {
     const getZones = async () => {
@@ -32,7 +32,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    navigator.geolocation.watchPosition(
+    const watcherId = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setUserPosition([latitude, longitude]);
@@ -41,6 +41,7 @@ export default function Home() {
         console.error(`Geolocation Error (Code ${error.code}): ${error.message}`);
       }
     );
+    return () => navigator.geolocation.clearWatch(watcherId);
   }, []);
 
   useEffect(() => {
@@ -49,26 +50,23 @@ export default function Home() {
     });
     const channel = pusher.subscribe('parking-updates');
     channel.bind('zone-update', (data) => {
-      console.log('Received real-time update:', data);
       setLiveZoneData(prevData => ({
         ...prevData,
         [data.zoneId]: data
       }));
     });
-
     return () => {
       pusher.unsubscribe('parking-updates');
       pusher.disconnect();
     };
   }, []);
 
-   return (
+  return (
     <main style={{ height: '100vh', width: '100vw' }}>
       <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       
-      {/* --- CHANGE: Conditionally render the TimeSlider --- */}
       {viewMode === 'forecast' && (
-        <TimeSlider selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
+        <ForecastControl selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
       )}
 
       <MapLoader 
@@ -76,13 +74,18 @@ export default function Home() {
         selectedTime={selectedTime} 
         userPosition={userPosition} 
         liveZoneData={liveZoneData} 
-        viewMode={viewMode} // Pass the viewMode to the map
+        viewMode={viewMode}
       />
-      <ReportingUI 
-        zones={zones} 
-        userPosition={userPosition} 
-        liveZoneData={liveZoneData} 
-      />
+      
+      {/* --- CHANGE: Conditionally render the ReportingUI --- */}
+      {/* The reporting buttons will now only appear in 'live' mode */}
+      {viewMode === 'live' && (
+        <ReportingUI 
+          zones={zones} 
+          userPosition={userPosition} 
+          liveZoneData={liveZoneData} 
+        />
+      )}
     </main>
   );
 }
