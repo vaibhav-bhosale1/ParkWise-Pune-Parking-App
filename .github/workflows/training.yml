@@ -8,7 +8,7 @@ on:
 
   # Runs on a schedule (every day at 00:00 UTC)
   schedule:
-    - cron: '0 0 * * *'
+  - cron: '*/5 * * * *'
 
 jobs:
   train-and-save-predictions:
