@@ -80,31 +80,32 @@ const ReportingUI = ({ userPosition, zones, liveZoneData }) => {
   };
 
 return (
-    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
-      <Card>
-        <CardHeader className="p-3">
-          <CardTitle className="text-center text-sm font-medium text-gray-700">
-            {zone 
-              ? `Nearest: ${zone.zoneName} (${Math.round(distance)}m away)` 
-              : "Finding nearest parking zone..."}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 pt-0 flex justify-center gap-2">
-          <Button 
-            onClick={() => handleReport('parked')} 
-            disabled={isFull}
-          >
-            I Just Parked
-          </Button>
-          <Button onClick={() => handleReport('left')} variant="outline">
-            I Just Left
-          </Button>
-          <Button onClick={() => handleReport('full')} variant="destructive">
-            Area is Full
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-sm px-4">
+  <Card className="w-full">
+    <CardHeader className="p-3">
+      <CardTitle className="text-center text-sm font-medium text-gray-700">
+        {zone 
+          ? `Nearest: ${zone.zoneName} (${Math.round(distance)}m away)` 
+          : "Finding nearest parking zone..."}
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="p-3 pt-0 flex justify-center gap-2">
+      <Button 
+        onClick={() => handleReport('parked')} 
+        disabled={isFull}
+      >
+        I Just Parked
+      </Button>
+      <Button onClick={() => handleReport('left')} variant="outline">
+        I Just Left
+      </Button>
+      <Button onClick={() => handleReport('full')} variant="destructive">
+        Area is Full
+      </Button>
+    </CardContent>
+  </Card>
+</div>
+
   );
 };
 export default ReportingUI;
