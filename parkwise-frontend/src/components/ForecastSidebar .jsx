@@ -15,26 +15,44 @@ const getPredictionForTime = (predictions, time) => {
   });
 };
 
-// Helper to get a friendly tip based on the selected time
+// Helper to get a contextual tip
 const getParkingTip = (selectedTime) => {
-    const hour = selectedTime.getHours();
-    if (hour >= 19 && hour <= 22) {
-        return "Evening Rush: This is a peak time for dining and shopping. Plan for extra time to find a spot.";
-    }
-    if (hour >= 8 && hour <= 10) {
-        return "Morning Commute: Office-goers are arriving. Parking may be challenging in business districts.";
-    }
-    if (hour >= 12 && hour <= 14) {
-        return "Lunchtime Peak: Expect higher traffic around restaurants and commercial areas.";
-    }
-    if (hour < 6 || hour > 23) {
-        return "Late Night/Early Morning: Parking is generally easy to find at this hour.";
-    }
-    return "Off-Peak Hours: Finding a parking spot should be relatively easy right now.";
+  const hour = selectedTime.getHours();
+  if (hour >= 19 && hour <= 22) {
+    return "Evening Rush: This is a peak time for dining and shopping. Plan for extra time to find a spot.";
+  }
+  if (hour >= 8 && hour <= 10) {
+    return "Morning Commute: Office-goers are arriving. Parking may be challenging in business districts.";
+  }
+  if (hour >= 12 && hour <= 14) {
+    return "Lunchtime Peak: Expect higher traffic around restaurants and commercial areas.";
+  }
+  if (hour < 6 || hour > 23) {
+    return "Late Night/Early Morning: Parking is generally easy to find at this hour.";
+  }
+  return "Off-Peak Hours: Finding a parking spot should be relatively easy right now.";
+};
+
+// Helper to generate fact based on forecast
+const getAvailabilityFact = (hourlyForecast) => {
+  if (!hourlyForecast || hourlyForecast.length === 0) {
+    return "No forecast data available right now.";
+  }
+
+  // Average availability across the forecast window
+  const avgAvailability = hourlyForecast.reduce((sum, item) => sum + item.availability, 0) / hourlyForecast.length;
+
+  if (avgAvailability > 70) {
+    return `👍 Parking looks good! On average, ${Math.round(avgAvailability)}% of spots are likely available over the next few hours.`;
+  }
+  if (avgAvailability > 40) {
+    return `⚠️ Moderate availability: About ${Math.round(avgAvailability)}% average availability forecasted. You might need a little extra time.`;
+  }
+  return `🚨 High demand! Average availability is only ${Math.round(avgAvailability)}%. Finding parking may be tough, consider alternatives.`;
 };
 
 const ForecastSidebar = ({ zones, selectedTime }) => {
-  // 1. Calculate the average availability for the next 8 hours
+  // 1. Calculate hourly forecast
   const hourlyForecast = React.useMemo(() => {
     const now = new Date(selectedTime);
     const data = [];
@@ -60,8 +78,11 @@ const ForecastSidebar = ({ zones, selectedTime }) => {
     return data;
   }, [zones, selectedTime]);
 
-  // 2. Get a contextual tip
+  // 2. Get contextual tip
   const tip = getParkingTip(selectedTime);
+
+  // 3. Get availability fact
+  const availabilityFact = getAvailabilityFact(hourlyForecast);
 
   return (
     <div className="absolute top-0 left-0 h-full w-80 bg-white z-[1000] shadow-lg p-4 flex flex-col gap-6 overflow-y-auto">
@@ -78,7 +99,7 @@ const ForecastSidebar = ({ zones, selectedTime }) => {
                 <Label value="Availability (%)" angle={-90} position="insideLeft" style={{ textAnchor: 'middle' }} />
               </YAxis>
               <Tooltip formatter={(value) => `${value}%`} />
-              <Bar dataKey="availability" fill="#8884d8" />
+              <Bar dataKey="availability" fill="#4F46E5" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -90,6 +111,15 @@ const ForecastSidebar = ({ zones, selectedTime }) => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-700">{tip}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">📊 Availability Fact</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600">{availabilityFact}</p>
         </CardContent>
       </Card>
     </div>
