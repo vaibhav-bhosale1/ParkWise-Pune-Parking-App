@@ -1,0 +1,43 @@
+/* src/styles/custom-datepicker.css */
+
+.react-datepicker-popper {
+  z-index: 1002 !important; /* Ensures the picker appears on top */
+}
+
+.react-datepicker {
+  font-family: inherit; /* Matches your app's font */
+  border-radius: 0.5rem;
+  border: 1px solid hsl(214.3 31.8% 91.4%); /* Matches shadcn/ui border */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.react-datepicker__header {
+  background-color: hsl(210 40% 98%);
+  border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header {
+  font-weight: 600;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+  background-color: hsl(221.2 83.2% 53.3%); /* Matches shadcn/ui primary color */
+  color: white;
+  font-weight: bold;
+}
+
+.react-datepicker__day--selected:hover,
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected:hover {
+  background-color: hsl(221.2 83.2% 48%);
+}
+
+.react-datepicker__day:hover {
+  background-color: hsl(210 40% 96.1%);
+  border-radius: 0.3rem;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: hsl(221.2 83.2% 60%);
+}

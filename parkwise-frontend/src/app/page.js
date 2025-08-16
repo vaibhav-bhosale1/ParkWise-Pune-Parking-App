@@ -5,6 +5,7 @@ import ReportingUI from '@/components/ReportingUI';
 import MapLoader from '@/components/MapLoader';
 import { useState, useEffect } from 'react';
 import ForecastControl from "@/components/ForecastControl";
+import ForecastSidebar from "../components/ForecastSidebar ";
 import Pusher from 'pusher-js';
 import ViewToggle from '@/components/ViewToggle';
 
@@ -62,11 +63,14 @@ export default function Home() {
   }, []);
 
   return (
-    <main style={{ height: '100vh', width: '100vw' }}>
+    <main className="relative h-screen w-screen">
       <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
       
       {viewMode === 'forecast' && (
-        <ForecastControl selectedTime={selectedTime} setSelectedTime={setSelectedTime}/>
+        <>
+          <ForecastControl selectedTime={selectedTime} setSelectedTime={setSelectedTime} />
+          <ForecastSidebar zones={zones} selectedTime={selectedTime} />
+        </>
       )}
 
       <MapLoader 
@@ -77,8 +81,6 @@ export default function Home() {
         viewMode={viewMode}
       />
       
-      {/* --- CHANGE: Conditionally render the ReportingUI --- */}
-      {/* The reporting buttons will now only appear in 'live' mode */}
       {viewMode === 'live' && (
         <ReportingUI 
           zones={zones} 

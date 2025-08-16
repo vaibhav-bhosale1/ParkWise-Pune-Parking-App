@@ -2,3 +2,4 @@ parkwise-backend/node_modules
 parkwise-backend/.env
 
 scripts/.env
+scripts/models

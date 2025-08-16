@@ -10,27 +10,31 @@ import mongoose from 'mongoose';
 const parkingZoneSchema = new mongoose.Schema({
   zoneId: { type: String, required: true, unique: true },
   zoneName: { type: String, required: true },
-  description: String,
-  category: String,
-  // This now correctly defines the schema for a GeoJSON Polygon.
+  description: { type: String },
+  category: { type: String }, // e.g. "commercial_high"
   area: {
     type: {
       type: String,
       enum: ['Polygon'],
-      required: true
+      required: false  // Not all docs in your DB have area
     },
     coordinates: {
-      type: [[[Number]]], // Array of LinearRing coordinate arrays
-      required: true
+      type: [[[Number]]], // [ [ [lng, lat], ... ] ]
+      required: false
     }
   },
-  estimatedCapacity: Number,
-  capacity: { type: Number, required: true, default: 20 }, // Added
-  currentOccupancy: { type: Number, required: true, default: 0 }, // Added
-  peakHours: [String],
-  predictions: Array,
-  lastUpdated: Date
+  estimatedCapacity: { type: Number },
+  capacity: { type: Number, required: true, default: 20 },
+  currentOccupancy: { type: Number, required: true, default: 0 },
+  peakHours: [{ type: String }],
+  predictions: { type: Array, default: [] },
+  lastUpdated: { type: Date, default: null },
+
+  // Extra fields found in your document
+  modelPerformance: { type: Object, default: {} },
+  zoneCategory: { type: String }
 });
+
 
 // This schema correctly matches your 'userreports' collection.
 const userReportSchema = new mongoose.Schema({

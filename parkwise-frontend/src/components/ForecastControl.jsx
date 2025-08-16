@@ -1,53 +1,62 @@
-// src/components/ForecastControl.jsx
-'use client';
+"use client"
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import TimePicker from './TimePicker ';
+import { useState, useEffect } from "react"
 
-const formatTime = (date) => {
-  return date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-};
+// 1. Import your new, complete DateTimePicker
+import { DateTimePicker } from "@/components/ui/date-picker-heroui";
+
+// 2. Import the necessary functions from the new libraries
+import {
+  now,
+  parseAbsoluteToLocal,
+  getLocalTimeZone
+} from "@internationalized/date";
 
 const ForecastControl = ({ selectedTime, setSelectedTime }) => {
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  // State for the picker, which uses the special `DateValue` object
+  const [dateValue, setDateValue] = useState(
+    selectedTime ? parseAbsoluteToLocal(selectedTime.toISOString()) : null
+  );
 
-  const handleOk = (newTime) => {
-    setSelectedTime(newTime);
-    setIsPickerOpen(false);
+  // When the picker's value changes, we convert it back to a normal JS Date
+  const handlePickerChange = (newDateValue) => {
+    setDateValue(newDateValue);
+    if (newDateValue) {
+      // This is the "bridge" back to the standard JS Date object for your app
+      setSelectedTime(newDateValue.toDate(getLocalTimeZone()));
+    } else {
+      setSelectedTime(null);
+    }
   };
 
-  const handleCancel = () => {
-    setIsPickerOpen(false);
-  };
+  // Keep the internal dateValue in sync if the external selectedTime prop changes
+  useEffect(() => {
+    setDateValue(
+      selectedTime ? parseAbsoluteToLocal(selectedTime.toISOString()) : null
+    );
+  }, [selectedTime]);
 
   return (
-    <>
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+    <div
+      style={{
+        position: "absolute",
+        top: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
         zIndex: 1000,
-      }}>
-        <Button onClick={() => setIsPickerOpen(true)}>
-          Forecast for: {formatTime(selectedTime)}
-        </Button>
-      </div>
-
-      {isPickerOpen && (
-        <TimePicker 
-          initialTime={selectedTime}
-          onOk={handleOk}
-          onCancel={handleCancel}
-        />
-      )}
-    </>
-  );
-};
+        width: '320px' // Give the component a defined width
+      }}
+    >
+      <DateTimePicker
+        label="Forecast for"
+        value={dateValue}
+        onChange={handlePickerChange}
+        // This is the robust way to prevent selecting past dates and times
+        minValue={now(getLocalTimeZone())}
+        granularity="minute"
+      />
+    </div>
+  )
+}
 
 export default ForecastControl;
