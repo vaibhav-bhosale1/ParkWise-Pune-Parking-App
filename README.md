@@ -1,6 +1,7 @@
 # ParkWise - AI & Real-Time Parking Assistant 🚗
 
 ParkWise is a full-stack, serverless web application designed to solve the urban challenge of finding parking in Pune, India. It offers a dual-mode interface, providing users with both live, real-time parking availability based on crowd-sourced reports and an AI-powered predictive forecast for future parking conditions.
+
 <img width="1918" height="785" alt="image" src="https://github.com/user-attachments/assets/dfc94473-a43f-4fc2-8eca-ff3249a439be" />
 
 <img width="1899" height="769" alt="image" src="https://github.com/user-attachments/assets/4f0c9d96-2035-4ac4-801d-789ca3517511" />
